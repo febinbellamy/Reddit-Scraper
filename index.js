@@ -9,17 +9,37 @@ const url =
   await page.goto(url);
 
   // expand all comment threads:
-  let expandButtons = await page.$$(".morecomments");
-  while (expandButtons.length) {
-    for (let button of expandButtons) {
-      await button.click();
-      await page.waitForTimeout(500);
-    }
-    await page.waitForTimeout(1000);
-    expandButtons = await page.$$(".morecomments");
-  }
+  // let expandButtons = await page.$$(".morecomments");
+  // while (expandButtons.length) {
+  //   for (let button of expandButtons) {
+  //     await button.click();
+  //     await page.waitForTimeout(500);
+  //   }
+  //   await page.waitForTimeout(1000);
+  //   expandButtons = await page.$$(".morecomments");
+  // }
 
-  // scrape text and points
+  // for every comment, scrape the text and the points
+  const comments = await page.$$(".entry");
+
+  const formattedComments = [];
+
+  for (let comment of comments) {
+    const points = await comment
+      .$eval(".score", (elem) => elem.textContent)
+      .catch((err) => console.error("No score!"));
+
+    const rawText = await comment
+      .$eval(".usertext-body", (elem) => elem.textContent)
+      .catch((err) => console.error("No text!"));
+
+    if (points && rawText) {
+      const text = rawText.replace(/\n/g, "");
+      formattedComments.push({ points, text });
+    }
+  }
+  console.log({ formattedComments });
+
   // sort the comments by highest points
   // insert the sorted comments into the google spreadsheet
 
