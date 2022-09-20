@@ -38,10 +38,16 @@ const url =
       formattedComments.push({ points, text });
     }
   }
-  console.log({ formattedComments });
 
-  // sort the comments by highest points
+  // sort comments by highest points
+  formattedComments.sort((a, b) => {
+    const pointsA = Number(a.points.split(" ")[0]);
+    const pointsB = Number(b.points.split(" ")[0]);
+    return pointsB - pointsA;
+  });
+  console.log(formattedComments.slice(0, 10));
+
   // insert the sorted comments into the google spreadsheet
-
+  
   // await browser.close();
 })();
