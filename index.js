@@ -4,10 +4,11 @@ const Sheet = require("./sheet");
 const url =
   "https://old.reddit.com/r/learnprogramming/comments/4q6tae/i_highly_recommend_harvards_free_online_2016_cs50/";
 
-(async function () {
-  const browser = await puppeteer.launch({ headless: false });
-  const page = await browser.newPage();
-  await page.goto(url);
+(async function () { // Immediately invoked function expression
+
+  const browser = await puppeteer.launch({ headless: false }); // start the puppeteer program. If headless is set to false, the browser will open.
+  const page = await browser.newPage(); //  open a new tab
+  await page.goto(url); // navigate to a URL
 
   const sheet = new Sheet();
   await sheet.load();
@@ -20,14 +21,14 @@ const url =
   ]);
 
   // expand all comment threads:
-  let expandButtons = await page.$$(".morecomments");
+  let expandButtons = await page.$$(".morecomments"); // an array of morecomments elements
   while (expandButtons.length) {
     for (let button of expandButtons) {
-      await button.click();
-      await page.waitForTimeout(500);
+      await button.click(); // click each of the morecomments buttons IN ORDER, one after another
+      await page.waitForTimeout(500); // this creates a small delay so that too many requests aren't being sent to the reddit server at once
     }
     await page.waitForTimeout(1000);
-    expandButtons = await page.$$(".morecomments");
+    expandButtons = await page.$$(".morecomments"); // after all the buttons have been clicked, update the value in expandButtons variable. This helps prevents an infinite loop
   }
 
   // for every comment, scrape the text and the points
@@ -35,11 +36,13 @@ const url =
 
   const formattedComments = [];
 
+  // scrape points
   for (let comment of comments) {
     const points = await comment
       .$eval(".score", (elem) => elem.textContent)
       .catch((err) => console.error("No score!"));
 
+    // scrape texts
     const rawText = await comment
       .$eval(".usertext-body", (elem) => elem.textContent)
       .catch((err) => console.error("No text!"));
@@ -60,5 +63,6 @@ const url =
 
   // insert the sorted comments into the google spreadsheet
   sheet.addRows(formattedComments, sheetIndex);
+
   await browser.close();
 })();
